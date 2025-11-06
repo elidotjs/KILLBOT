@@ -1,1 +1,2 @@
-purr value=4321.427776;
+purr thing = 32;
+thing = "42";
