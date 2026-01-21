@@ -1,26 +1,26 @@
 # TODO
-## README.md (0%)
-## Toki [ Tokenization ] (50%)
-### - Separate into text chunks (complete)
-### - Categorize into tokens (complete)
+## README.md
+## Toki [ Tokenization ]
+### - Separate into text chunks
+### - Categorize into tokens
 ### - Merge expressions
 #### eg. 52 + 5267 is an "Expression"
 ### - Scopes
 
-## * Rusty [ Structure Checker ] (50%?)
-### - Blueprint tokens (complete?)
-### - Tokens to Blueprint converter (complete?)
-### - List of valid structures (WIP)
+## * Rusty [ Structure Checker ]
+### - Blueprint tokens
+### - Tokens to Blueprint converter
+### - List of valid structures
 ### - Check Structure function
 
-## Pillow [ Compiler ] (0%)
+## Pillow [ Compiler ]
 ### - Compile tokens (yeah, I don't really have a plan for this one. I'll make one when i get to it)
 
-## Pyth [ ALU ] (100%?)
-### Add (complete)
-### Subtract (complete)
-### Multiply (complete)
-### Divide (complete)
+## Pyth [ ALU ]
+### Add
+### Subtract
+### Multiply
+### Divide
 
 ## "Error! [ Error Messages ]
 ### - Assignment errors
