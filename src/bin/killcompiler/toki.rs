@@ -1,22 +1,12 @@
-use std::collections::HashMap;
-use std::sync::LazyLock;
 use regex::Regex;
-
-static OPERATOR_PRECEDENCE: LazyLock<HashMap<&str, i8>> = LazyLock::new(|| {
-    HashMap::from(
-        [
-            ("add", 0),
-            ("subtract", 0),
-            ("multiply", 1),
-            ("divide", 1),
-        ]
-    )
-});
+use crate::toki::Keywords::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Keywords {
     NoOp,
-    Print { what: String },
+    Print,
+    Var,
+    Add
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -41,6 +31,8 @@ pub enum Specials {
     EndOfLine,
 }
 
+
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     TypeToken { r#type: Types },
@@ -52,110 +44,6 @@ pub enum Token {
     OperatorToken { operator: Operators },
     IdentificationToken { name: String },
     SpecialToken { value: Specials },
-}
-
-
-#[derive(Debug, PartialEq)]
-pub enum AbstractToken {
-    Type,
-    Special,
-    Value,
-    Identification,
-    ExpressionToken
-}
-
-#[derive(Debug, PartialEq)]
-pub enum MetaToken {
-    Any,
-    End,
-    WhateverIsNext
-}
-
-#[derive(Debug, PartialEq)]
-pub enum BlueprintToken {
-    // Types
-    Abstract {
-        token: AbstractToken
-    },
-
-    Meta {
-        token: MetaToken
-    },
-
-    PurrType,
-    DoublePurrType,
-    WoolType,
-
-    Period,
-    EndOfLine,
-
-    ExpressionToken,
-
-    // Values
-    ValueToken,
-    PurrValue,
-    DoublePurrValue,
-    WoolValue,
-
-    KeywordToken,
-    IdentificationToken,
-
-    // operators
-    OperatorToken,
-    EqualsToken,
-    MinusToken,
-    PlusToken,
-    MultiplicationToken,
-    DivideToken,
-}
-
-impl Token {
-    pub fn to_blueprint(&self) -> BlueprintToken {
-        match self {
-            Token::PurrValue { .. } => BlueprintToken::PurrValue,
-            Token::WoolValue { .. } => BlueprintToken::WoolValue,
-            Token::DoublePurrValue { .. } => BlueprintToken::DoublePurrValue,
-
-            Token::SpecialToken { value } => {
-                match value {
-                    Specials::Period => BlueprintToken::Period,
-                    Specials::EndOfLine => BlueprintToken::EndOfLine,
-                }
-            },
-
-            Token::IdentificationToken { .. } => BlueprintToken::IdentificationToken,
-            
-
-            Token::KeywordToken { .. } => BlueprintToken::KeywordToken,
-            Token::ExpressionToken { .. } => BlueprintToken::ExpressionToken,
-
-            Token::TypeToken { r#type } => {
-                match r#type {
-                    Types::Purr => BlueprintToken::PurrType,
-                    Types::Wool => BlueprintToken::WoolType,
-                    Types::DoublePurr => BlueprintToken::DoublePurrType,
-                }
-            },
-
-
-            Token::OperatorToken { operator } => {
-                match operator {
-                    Operators::Plus => BlueprintToken::PlusToken,
-                    Operators::Minus => BlueprintToken::MinusToken,
-                    Operators::Multiplication => BlueprintToken::MultiplicationToken,
-                    Operators::Divide => BlueprintToken::DivideToken,
-                    Operators::Equals => BlueprintToken::EqualsToken,
-                }
-            },
-        }
-    }
-}
-
-pub fn to_blueprint_tokens(tokens: &Vec<Token>) -> Vec<BlueprintToken> {
-    tokens
-        .iter()
-        .map(|token| token.to_blueprint())
-        .collect()
 }
 
 fn separate_into_chunks(string: String) -> Vec<String> {
@@ -189,9 +77,27 @@ fn separate_into_chunks(string: String) -> Vec<String> {
 }
 
 fn categorize_into_tokens(chunks: Vec<String>) -> Vec<Token> {
+    let iter = chunks.iter().peekable();
+
     chunks
         .iter()
+        .peekable()
         .map(|chunk| match chunk.as_str() {
+            "print" => {
+                Token::KeywordToken {
+                    keyword: Print
+                }
+            },
+            "var" => {
+                Token::KeywordToken {
+                    keyword: Var
+                }
+            },
+            "add" => {
+                Token::KeywordToken {
+                    keyword: Add
+                }
+            },
             "wool" => Token::TypeToken {
                 r#type: Types::Wool,
             },
