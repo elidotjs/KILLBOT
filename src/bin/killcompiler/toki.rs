@@ -1,41 +1,58 @@
-use std::collections::HashMap;
-use std::sync::LazyLock;
+use std::io::Error;
 
-const pairs: LazyLock<HashMap<&str, Token>, fn() -> HashMap<&'static str, Token>> = LazyLock::new(|| {
-    HashMap::from(
-        [
-            ("print", Token::Keyword(Keyword::Print)),
-            ("add", Token::Keyword(Keyword::Add)),
-            ("var", Token::Keyword(Keyword::Var)),
-            (";", Token::Special(Special::EndOfLine))
-        ]
-    )
-});
+//
+// CAT: Toki
+// JOB: Tokenization (hence... the name Toki)
+// PIPELINE: Separate Into Chunks -> Compress Into Tokens
+// EXECUTE: tokenize(String)
+//
+// rate my docstrings
+use killbot::REGEXES;
 
-
-enum Value {
-    Wool(String),
-    Purr(i32),
-    DoublePurr(f64)
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Types {
+    Text,
+    Number,
+    Symbol,
 }
 
-enum Keyword {
-    Add,
-    Print,
-    Var
+#[derive(Debug, PartialEq, Clone)]
+pub enum Token {
+    Text(String),
+    Number(String),
+    Symbol(char),
+    Generic(Types),
 }
 
-enum Special {
-    EndOfLine
+pub enum BlueprintToken {
+    Text,
+    Number,
+    Symbol,
 }
 
-enum Token {
-    Value(Value),
-    Keyword(Keyword),
-    Special(Special)
+impl Token {
+    pub fn equals_to(&self, other: &Self) -> Result<bool, &'static str> {
+        match self {
+            Token::Text(_) => Ok(self == other || other == &Token::Generic(Types::Text)),
+            Token::Number(_) => Ok(self == other || other == &Token::Generic(Types::Number)),
+            Token::Symbol(_) => Ok(self == other || other == &Token::Generic(Types::Symbol)),
+            Token::Generic(_) => {
+                if let Token::Generic(_) = other {
+                    Err("Cannot compare Generic to Generic.")
+                } else {
+                    other.to_owned().equals_to(self)
+                }
+            }
+        }
+    }
 }
 
+///
+/// "var thing = 10;" -> ["var", "thing", "=", "10", ";"]
+///
 fn separate_into_chunks(string: String) -> Vec<String> {
+    let text_regex = REGEXES.get("text").unwrap();
+
     let mut current_token = String::new();
     let mut chunks = Vec::new();
 
@@ -44,15 +61,24 @@ fn separate_into_chunks(string: String) -> Vec<String> {
     for char in string.chars() {
         if char == '"' {
             collecting_string = !collecting_string;
-            continue
+
+            if !collecting_string {
+                // we're closing a string. Add the quotations so it's easier to diferentiate.
+                let temp = current_token.clone();
+                current_token = "\"".to_string();
+                current_token.push_str(&temp);
+                current_token.push('"');
+            }
+            continue;
         }
 
         if collecting_string {
             current_token.push(char);
-            continue
+            continue;
         }
 
-        if char.is_alphanumeric() || char == '_' || char == '.' {
+        if text_regex.is_match(&String::from(char)) {
+            // shut the hell up, if it matches, it should be pushed.
             current_token.push(char);
         } else {
             if !current_token.trim().is_empty() {
@@ -68,10 +94,62 @@ fn separate_into_chunks(string: String) -> Vec<String> {
     if !current_token.trim().is_empty() {
         chunks.push(current_token);
     }
-
     chunks
 }
 
-pub fn tokenize(text: String) {
-    println!("{:?}", separate_into_chunks(text))
+///
+/// (also see separate_into_chunks)
+/// ["var", "thing", "=", "10", ";"] -> [Text("var"), Text("thing"), Symbol("="), Number("10"), Symbol(";")]
+///
+fn compress_into_raw_tokens(chunks: Vec<String>) -> Vec<Token> {
+    let text_regex = REGEXES.get("text").unwrap();
+    let number_regex = REGEXES.get("number").unwrap();
+
+    let mut tokens = vec![];
+
+    for chunk in chunks {
+        if number_regex.is_match(&chunk) {
+            tokens.push(Token::Number(chunk));
+        } else if text_regex.is_match(&chunk) {
+            tokens.push(Token::Text(chunk));
+        } else {
+            tokens.push(Token::Symbol(chunk.chars().nth(0).unwrap()))
+        }
+    }
+
+    tokens
+}
+
+pub fn tokenize(text: String) -> Vec<Token> {
+    compress_into_raw_tokens(separate_into_chunks(text))
+}
+
+#[test]
+fn test_raw_equals() {
+    assert!(
+        Token::Number(String::from("34.2"))
+            .equals_to(&Token::Number(String::from("34.2")))
+            .unwrap()
+    );
+
+    assert!(
+        !Token::Number(String::from("34.2"))
+            .equals_to(&Token::Number(String::from("34.3")))
+            .unwrap()
+    );
+}
+
+#[test]
+fn test_generic_equals() {
+    assert!(
+        Token::Number(String::from("34.2"))
+            .equals_to(&Token::Generic(Types::Number))
+            .unwrap()
+    );
+
+    assert!(
+        !Token::Number(String::from("34.2"))
+            .equals_to(&Token::Generic(Types::Text))
+            .unwrap()
+    );
 }

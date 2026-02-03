@@ -1,7 +1,11 @@
-mod kotli;
+// mod kotli;
+mod rusty;
 mod toki;
 
 fn main() {
     let path = "/home/elidotkt/Desktop/KILLBOT/main.kb";
-    toki::tokenize(std::fs::read_to_string(path).expect("Brazil"))
+    println!(
+        "{:?}",
+        rusty::instructionize(toki::tokenize(std::fs::read_to_string(path).unwrap()))
+    )
 }

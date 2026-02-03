@@ -1,24 +1,15 @@
-#[derive(Debug)]
-pub enum Cats {
-    Toki,
-    Kotli,
-    Pyth,
-    Pillow
-}
+use regex::Regex;
+use std::collections::HashMap;
+use std::sync::LazyLock;
 
-pub struct Error {
-    pub cat: Cats, 
-    pub error_message: &'static str, 
-    pub cause: &'static str,
-    pub line: u64
-}
+///
+/// "text",
+/// "number"
+///
+pub static REGEXES: LazyLock<HashMap<String, Regex>> = LazyLock::new(|| {
+    let mut temp = HashMap::new();
+    temp.insert("text".to_string(), Regex::new(r"[a-zA-Z0-9_]").unwrap());
+    temp.insert("number".to_string(), Regex::new(r"\d+\.\d+|\d+").unwrap());
 
-pub fn print_error_message(error: Error) {
-    let Error {cat, error_message, cause, line} = error;
-    println!("{:?} - {error_message}", cat);
-    cause.split("\n").into_iter().for_each(
-        |line| {
-            println!(": {line}");
-        }
-    );
-}
+    temp
+});
