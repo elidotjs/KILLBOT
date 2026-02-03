@@ -2,19 +2,13 @@
 ## README.md
 ## Toki [ Tokenization ]
 ### - Separate into text chunks
-### - Categorize into tokens
-### - Merge expressions
-#### eg. 52 + 5267 is an "Expression"
-### - Scopes
+### - Categorize into raw tokens
 
 ## * Rusty [ Structure Checker ]
-### - Blueprint tokens
-### - Tokens to Blueprint converter
-### - List of valid structures
-### - Check Structure function
+### - DUDE IDK BRO
 
-## Pillow [ Compiler ]
-### - Compile tokens (yeah, I don't really have a plan for this one. I'll make one when i get to it)
+## Kotli [ Execution ]
+### - You heard me.
 
 ## Pyth [ ALU ]
 ### Add
@@ -23,14 +17,6 @@
 ### Divide
 
 ## "Error! [ Error Messages ]
-### - Assignment errors
-### - Type errors
-### - Syntax errors
-
-## Literally all of them
-### Robust error checking
-### Use the least .clone() possible
-
 
 # Extras, because... WHY NOT??
 ## something like the thing that lets you code in the terminal
