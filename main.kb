@@ -1,1 +1,2 @@
-var this_is_destructive_kind_of = "reason: whitespace"; wait_i_can_do_one_line_programs_now = 20;
+var this_is_destructive_kind_of = "reason: whitespace";
+var wait_i_can_do_one_line_programs_now = 20;
