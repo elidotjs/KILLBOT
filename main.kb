@@ -1,2 +1,8 @@
-var this_is_destructive_kind_of = "reason: whitespace";
-var wait_i_can_do_one_line_programs_now = 20;
+var a = 42;
+var b = 520;
+
+
+print a;
+print b;
+print "a";
+print "b";
